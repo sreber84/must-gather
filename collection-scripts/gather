@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# generate /must-gather/version file
-. version
-echo "openshift/must-gather"> /must-gather/version
-version >> /must-gather/version
-
 source $(dirname "$0")/common.sh
 get_log_collection_args
 
@@ -21,11 +16,10 @@ group_resources=()
 all_ns_resources=()
 
 # Cluster Version Information
-named_resources+=(ns/openshift-cluster-version)
-group_resources+=(clusterversion)
+named_resources+=(ns/kube-system)
 
 # Operator and APIService Resources
-group_resources+=(clusteroperators apiservices)
+group_resources+=(apiservices)
 
 # Certificate Resources
 group_resources+=(certificatesigningrequests)
@@ -34,20 +28,11 @@ group_resources+=(certificatesigningrequests)
 group_resources+=(nodes)
 
 # Namespaces/Project Resources
-named_resources+=(ns/default ns/openshift ns/kube-system ns/openshift-etcd)
+named_resources+=(ns/default)
 
 # Storage Resources
 group_resources+=(storageclasses persistentvolumes volumeattachments csidrivers csinodes volumesnapshotclasses volumesnapshotcontents)
 all_ns_resources+=(csistoragecapacities)
-
-# Image-source Resources
-group_resources+=(imagecontentsourcepolicies.operator.openshift.io)
-
-# Networking Resources
-group_resources+=(networks.operator.openshift.io)
-
-# NodeNetworkState
-resources+=(nodenetworkstates nodenetworkconfigurationenactments nodenetworkconfigurationpolicies)
 
 # Leases
 all_ns_resources+=(leases)
@@ -72,73 +57,17 @@ pids+=($!)
 oc adm inspect ${log_collection_args} --dest-dir must-gather --rotated-pod-logs "${all_ns_resources[@]}" --all-namespaces &
 pids+=($!)
 
-# Gather Insights Operator Archives
-/usr/bin/gather_insights &
-pids+=($!)
-
-# Gather monitoring data from the cluster
-/usr/bin/gather_monitoring &
-pids+=($!)
-
-# Gather optional operator resources from all namespaces
-/usr/bin/gather_olm &
-pids+=($!)
-
 # Gather API Priority and Fairness Endpoints
-/usr/bin/gather_priority_and_fairness &
-pids+=($!)
+# /usr/bin/gather_priority_and_fairness &
+# pids+=($!)
 
 # Gather etcd information
-/usr/bin/gather_etcd &
-pids+=($!)
-
-# Gather Service Logs (using a supplemental Script); Scoped to Masters.
-/usr/bin/gather_service_logs master &
-pids+=($!)
-
-# Gather Windows Kubernetes component logs
-/usr/bin/gather_windows_node_logs &
-pids+=($!)
-
-# Gather HAProxy config files
-/usr/bin/gather_haproxy_config &
-pids+=($!)
+# /usr/bin/gather_etcd &
+# pids+=($!)
 
 # Gather kas startup and termination logs
-/usr/bin/gather_kas_startup_termination_logs &
-pids+=($!)
-
-# Gather network logs
-/usr/bin/gather_network_logs_basics &
-pids+=($!)
-
-# Gather metallb logs
-/usr/bin/gather_metallb &
-pids+=($!)
-
-# Gather NMState
-/usr/bin/gather_nmstate &
-pids+=($!)
-
-# Gather SR-IOV resources
-/usr/bin/gather_sriov &
-pids+=($!)
-
-# Gather PodNetworkConnectivityCheck
-/usr/bin/gather_podnetworkconnectivitycheck &
-pids+=($!)
-
-# Gather On-Disk MachineConfig files
-/usr/bin/gather_machineconfig_ondisk &
-pids+=($!)
-
-# Gather vSphere resources. This is NOOP on non-vSphere platform.
-/usr/bin/gather_vsphere &
-pids+=($!)
-
-# Gather Performance profile information
-/usr/bin/gather_ppc &
-pids+=($!)
+# /usr/bin/gather_kas_startup_termination_logs &
+# pids+=($!)
 
 # Check if PID array has any values, if so, wait for them to finish
 if [ ${#pids[@]} -ne 0 ]; then

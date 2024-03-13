@@ -1,3 +1,3 @@
-FROM quay.io/openshift/okd-content@sha256:2720e98c9d04bb1b191c1dcac9fea8bff40c1701dd91f721101f4f4fb43576e0
+FROM quay.io/openshift/okd-content:4.15.0-0.okd-2024-03-10-010116-cli
 COPY collection-scripts/* /usr/bin/ 
 CMD ["bash", "/usr/bin/gather"]

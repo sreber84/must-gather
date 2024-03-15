@@ -1,6 +1,5 @@
 reviewers:
-  - sferich888
+  - sreber84
 approvers:
-  - sferich888
-  - soltysh
+  - sreber84
 component: "oc"
